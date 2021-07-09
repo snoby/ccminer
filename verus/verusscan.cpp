@@ -73,7 +73,13 @@ extern "C" inline void FixKey(uint32_t *fixrand, uint32_t *fixrandex, u128 *keyb
 	u128 * g_prand, u128 *g_prandex)
 {
 	u128 buf1, buf2;
-	for (int i = 31; i > -1; i--)
+	// for (int i = 31; i > -1; i--)
+	// {
+	// 	keyback[fixrandex[i]] = g_prandex[i];
+	// 	keyback[fixrand[i]] = g_prand[i];
+	// }
+#pragma clang loop unroll(full)
+	for (int i = 0; i < 32; i++)
 	{
 		keyback[fixrandex[i]] = g_prandex[i];
 		keyback[fixrand[i]] = g_prand[i];
@@ -130,7 +136,7 @@ extern "C" inline void FixKey(uint32_t *fixrand, uint32_t *fixrandex, u128 *keyb
 
 
 extern "C" void inline Verus2hash(unsigned char *hash, unsigned char *curBuf, uint32_t nonce,
-	u128 *data_key, uint8_t *gpu_init, uint32_t *fixrand, uint32_t *fixrandex, u128 *g_prand, 
+	u128 *data_key, uint8_t *gpu_init, uint32_t *fixrand, uint32_t *fixrandex, u128 *g_prand,
 	u128 *g_prandex, int version)
 {
 	//uint64_t mask = VERUS_KEY_SIZE128; //552
@@ -207,8 +213,8 @@ extern "C" int scanhash_verus(int thr_id, struct work *work, uint32_t max_nonce,
 	do {
 
 		*hashes_done = nonce_buf + throughput;
-Verus2hash((unsigned char *)vhash, (unsigned char *)blockhash_half, nonce_buf, data_key, 
-				&gpuinit, fixrand, fixrandex , data_key_prand, data_key_prandex, version);
+		Verus2hash((unsigned char *)vhash, (unsigned char *)blockhash_half, nonce_buf, data_key,
+						&gpuinit, fixrand, fixrandex , data_key_prand, data_key_prandex, version);
 
 		if (vhash[7] <= Htarg )
 		{
