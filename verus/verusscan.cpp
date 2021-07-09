@@ -80,9 +80,7 @@ extern "C" inline void FixKey(uint32_t *fixrand, uint32_t *fixrandex, u128 *keyb
 	// 	keyback[fixrand[i]] = g_prand[i];
 	// }
 
-	keyback[fixrandex[32 ]] = g_prandex[32 ];
-  keyback[fixrand[32 ]] = g_prand[32 ];
-  keyback[fixrandex[31 ]] = g_prandex[31 ];
+	keyback[fixrandex[31 ]] = g_prandex[31 ];
   keyback[fixrand[31 ]] = g_prand[31 ];
   keyback[fixrandex[30 ]] = g_prandex[30 ];
   keyback[fixrand[30 ]] = g_prand[30 ];
