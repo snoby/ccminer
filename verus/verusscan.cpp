@@ -73,17 +73,79 @@ extern "C" inline void FixKey(uint32_t *fixrand, uint32_t *fixrandex, u128 *keyb
 	u128 * g_prand, u128 *g_prandex)
 {
 	u128 buf1, buf2;
+
 	// for (int i = 31; i > -1; i--)
 	// {
 	// 	keyback[fixrandex[i]] = g_prandex[i];
 	// 	keyback[fixrand[i]] = g_prand[i];
 	// }
-#pragma clang loop unroll(full)
-	for (int i = 0; i < 32; i++)
-	{
-		keyback[fixrandex[i]] = g_prandex[i];
-		keyback[fixrand[i]] = g_prand[i];
-	}
+
+	keyback[fixrandex[32 ]] = g_prandex[32 ];
+  keyback[fixrand[32 ]] = g_prand[32 ];
+  keyback[fixrandex[31 ]] = g_prandex[31 ];
+  keyback[fixrand[31 ]] = g_prand[31 ];
+  keyback[fixrandex[30 ]] = g_prandex[30 ];
+  keyback[fixrand[30 ]] = g_prand[30 ];
+  keyback[fixrandex[29 ]] = g_prandex[29 ];
+  keyback[fixrand[29 ]] = g_prand[29 ];
+  keyback[fixrandex[28 ]] = g_prandex[28 ];
+  keyback[fixrand[28 ]] = g_prand[28 ];
+  keyback[fixrandex[27 ]] = g_prandex[27 ];
+  keyback[fixrand[27 ]] = g_prand[27 ];
+  keyback[fixrandex[26 ]] = g_prandex[26 ];
+  keyback[fixrand[26 ]] = g_prand[26 ];
+  keyback[fixrandex[25 ]] = g_prandex[25 ];
+  keyback[fixrand[25 ]] = g_prand[25 ];
+  keyback[fixrandex[24 ]] = g_prandex[24 ];
+  keyback[fixrand[24 ]] = g_prand[24 ];
+  keyback[fixrandex[23 ]] = g_prandex[23 ];
+  keyback[fixrand[23 ]] = g_prand[23 ];
+  keyback[fixrandex[22 ]] = g_prandex[22 ];
+  keyback[fixrand[22 ]] = g_prand[22 ];
+  keyback[fixrandex[21 ]] = g_prandex[21 ];
+  keyback[fixrand[21 ]] = g_prand[21 ];
+  keyback[fixrandex[20 ]] = g_prandex[20 ];
+  keyback[fixrand[20 ]] = g_prand[20 ];
+  keyback[fixrandex[19 ]] = g_prandex[19 ];
+  keyback[fixrand[19 ]] = g_prand[19 ];
+  keyback[fixrandex[18 ]] = g_prandex[18 ];
+  keyback[fixrand[18 ]] = g_prand[18 ];
+  keyback[fixrandex[17 ]] = g_prandex[17 ];
+  keyback[fixrand[17 ]] = g_prand[17 ];
+  keyback[fixrandex[16 ]] = g_prandex[16 ];
+  keyback[fixrand[16 ]] = g_prand[16 ];
+  keyback[fixrandex[15 ]] = g_prandex[15 ];
+  keyback[fixrand[15 ]] = g_prand[15 ];
+  keyback[fixrandex[14 ]] = g_prandex[14 ];
+  keyback[fixrand[14 ]] = g_prand[14 ];
+  keyback[fixrandex[13 ]] = g_prandex[13 ];
+  keyback[fixrand[13 ]] = g_prand[13 ];
+  keyback[fixrandex[12 ]] = g_prandex[12 ];
+  keyback[fixrand[12 ]] = g_prand[12 ];
+  keyback[fixrandex[11 ]] = g_prandex[11 ];
+  keyback[fixrand[11 ]] = g_prand[11 ];
+  keyback[fixrandex[10 ]] = g_prandex[10 ];
+  keyback[fixrand[10 ]] = g_prand[10 ];
+  keyback[fixrandex[9 ]] = g_prandex[9 ];
+  keyback[fixrand[9 ]] = g_prand[9 ];
+  keyback[fixrandex[8 ]] = g_prandex[8 ];
+  keyback[fixrand[8 ]] = g_prand[8 ];
+  keyback[fixrandex[7 ]] = g_prandex[7 ];
+  keyback[fixrand[7 ]] = g_prand[7 ];
+  keyback[fixrandex[6 ]] = g_prandex[6 ];
+  keyback[fixrand[6 ]] = g_prand[6 ];
+  keyback[fixrandex[5 ]] = g_prandex[5 ];
+  keyback[fixrand[5 ]] = g_prand[5 ];
+  keyback[fixrandex[4 ]] = g_prandex[4 ];
+  keyback[fixrand[4 ]] = g_prand[4 ];
+  keyback[fixrandex[3 ]] = g_prandex[3 ];
+  keyback[fixrand[3 ]] = g_prand[3 ];
+  keyback[fixrandex[2 ]] = g_prandex[2 ];
+  keyback[fixrand[2 ]] = g_prand[2 ];
+  keyback[fixrandex[1 ]] = g_prandex[1 ];
+  keyback[fixrand[1 ]] = g_prand[1 ];
+  keyback[fixrandex[0 ]] = g_prandex[0 ];
+  keyback[fixrand[0 ]] = g_prand[0 ];
 
 }
 
