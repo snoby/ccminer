@@ -2221,18 +2221,19 @@ static void *miner_thread(void *userdata)
 		work.valid_nonces = 0;
 
 		/* scan nonces for a proof-of-work hash */
-		switch (opt_algo) {
+		/* DP Comment out - only can do Verus, no need for this */
+		// switch (opt_algo) {
 
 		
-		case ALGO_EQUIHASH:
+		// case ALGO_EQUIHASH:
 			rc = scanhash_verus(thr_id, &work, max_nonce, &hashes_done);
-			break;
+			// break;
 		
 
-		default:
+		// default:
 			/* should never happen */
-			goto out;
-		}
+			// goto out;
+		// }
 
 		
 
@@ -2298,7 +2299,9 @@ static void *miner_thread(void *userdata)
 		if (!opt_quiet && loopcnt > 1 && (time(NULL) - tm_rate_log) > opt_maxlograte) {
 			format_hashrate(thr_hashrates[thr_id], s);
 			if(thr_hashrates[thr_id]>0)
-			gpulog(LOG_INFO, thr_id, "%s, %s", device_name[dev_id], s);
+			{
+				gpulog(LOG_INFO, thr_id, s);
+			}
 			tm_rate_log = time(NULL);
 		}
 
