@@ -1,13 +1,4 @@
 #!/bin/bash
-
-PoolWorker=ibm
-#PoolHost=23.124.56.132
-PoolHost=192.168.1.200
-#PoolHost=149.56.27.47
-Port=9999
-#PoolHost=na.luckpool.net
-#Port=3956
-PublicVerusCoinAddress=RNBV5hhpoPceg4JiKTWKbkeQzPDPKUZDM6
-VerusThreads=4
-
-nice -n 19 /home/dpazzula/verus/ccminer/ccminer -a verus -o stratum+tcp://${PoolHost}:${Port} -u ${PublicVerusCoinAddress}.${PoolWorker} -t ${VerusThreads} -q 
+hn=$(hostname)
+/mining/ccminer/ccminer -a verus -o stratum+tcp://${PoolHost}:${Port} -u ${PublicVerusCoinAddress}.${PoolWorker} -t ${VerusThreads} 
+#/mining/ccminer/ccminer -a verus -o stratum+tcp://${PoolHost}:${Port} -u ${PublicVerusCoinAddress}.${hn} -t ${VerusThreads}
