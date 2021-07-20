@@ -72,7 +72,6 @@ extern "C" inline void GenNewCLKey(unsigned char *seedBytes32, u128 *keyback)
 extern "C" inline void FixKey(uint32_t *fixrand, uint32_t *fixrandex, u128 *keyback,
 	u128 * g_prand, u128 *g_prandex)
 {
-	u128 buf1, buf2;
 
 	for (int i = 31; i > -1; i--)
 	{
@@ -226,14 +225,13 @@ extern "C" int scanhash_verus(int thr_id, struct work *work, uint32_t max_nonce,
 			goto out;
 		}
 
-		//}
 		if ((uint64_t)throughput + (uint64_t)nonce_buf >= (uint64_t)max_nonce) {
 
 			break;
 		}
 		nonce_buf += throughput;
 
-	} while (!work_restart[thr_id].restart);
+	} while (!work_restart[thr_id].restart );
 
 
 out:
