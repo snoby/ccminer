@@ -388,7 +388,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_1(__m128i *randomsource, c
 }
 
 __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, const __m128i buf[4], uint64_t keyMask,
-	uint32_t *fixrand, uint32_t *fixrandex, u128 *g_prand, u128 *g_prandex)
+	uint32_t *fixrand, uint32_t *fixrandex, __m128i *g_prand, __m128i *g_prandex)
 {
 	const __m128i pbuf_copy[4] = { _mm_xor_si128(buf[0], buf[2]), _mm_xor_si128(buf[1], buf[3]), buf[2], buf[3] };
 	const __m128i *pbuf;
@@ -684,8 +684,8 @@ uint64_t verusclhashv2_1(void * random, const unsigned char buf[64], uint64_t ke
 	return precompReduction64(acc);
 }
 
-uint64_t verusclhashv2_2(void * random, const unsigned char buf[64], uint64_t keyMask, uint32_t *fixrand, uint32_t *fixrandex,
-	u128 *g_prand, u128 *g_prandex) {
+uint64_t verusclhashv2_2(void * random, const unsigned char buf[64], uint64_t keyMask, uint32_t * __restrict fixrand, uint32_t * __restrict fixrandex,
+	__m128i * __restrict g_prand, __m128i * __restrict g_prandex) {
 	__m128i  acc = __verusclmulwithoutreduction64alignedrepeatv2_2((__m128i *)random, (const __m128i *)buf, 511, fixrand, fixrandex, g_prand, g_prandex);
 	acc = _mm_xor_si128(acc, lazyLengthHash(1024, 64));
 

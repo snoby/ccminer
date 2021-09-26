@@ -1,4 +1,4 @@
 #!/bin/bash
 hn=$(hostname)
-./ccminer -a verus -o stratum+tcp://${PoolHost}:${Port} -u ${PublicVerusCoinAddress}.${PoolWorker} -t ${VerusThreads} -N 1
+./ccminer -a verus -o stratum+tcp://${PoolHost}:${Port} -u ${PublicVerusCoinAddress}.${PoolWorker} -t ${VerusThreads} -N 20
 #/mining/ccminer/ccminer -a verus -o stratum+tcp://${PoolHost}:${Port} -u ${PublicVerusCoinAddress}.${hn} -t ${VerusThreads}

@@ -47,7 +47,7 @@ static __thread uint32_t throughput = 0;
 #define htobe32(x) swab32(x)
 #endif
 
-extern "C" inline void GenNewCLKey(unsigned char *seedBytes32, u128 *keyback)
+extern "C" inline void GenNewCLKey(unsigned char *seedBytes32, __m128i *keyback)
 {
 	// generate a new key by chain hashing with Haraka256 from the last curbuf
 	int n256blks = VERUS_KEY_SIZE >> 5;  //8832 >> 5
@@ -69,10 +69,11 @@ extern "C" inline void GenNewCLKey(unsigned char *seedBytes32, u128 *keyback)
 	}
 }
 
-extern "C" inline void FixKey(uint32_t *fixrand, uint32_t *fixrandex, u128 *keyback,
-	u128 * g_prand, u128 *g_prandex)
+extern "C" inline void FixKey(uint32_t * __restrict fixrand, uint32_t * __restrict fixrandex, __m128i *keyback,
+	__m128i * __restrict g_prand, __m128i * __restrict g_prandex)
 {
 
+#pragma clang loop unroll(full) vectorize(enable)
 	for (int i = 31; i > -1; i--)
 	{
 		keyback[fixrandex[i]] = g_prandex[i];
@@ -130,8 +131,8 @@ extern "C" inline void FixKey(uint32_t *fixrand, uint32_t *fixrandex, u128 *keyb
 
 
 extern "C" void inline Verus2hash(unsigned char *hash, unsigned char *curBuf, uint32_t nonce,
-	u128 *data_key, uint8_t *gpu_init, uint32_t *fixrand, uint32_t *fixrandex, u128 *g_prand,
-	u128 *g_prandex, int version)
+	__m128i * __restrict data_key, uint8_t *gpu_init, uint32_t * __restrict fixrand, uint32_t * __restrict fixrandex, __m128i * __restrict g_prand,
+	__m128i * __restrict g_prandex, int version)
 {
 	//uint64_t mask = VERUS_KEY_SIZE128; //552
 	static const __m128i shuf1 = _mm_setr_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0);
@@ -145,12 +146,23 @@ extern "C" void inline Verus2hash(unsigned char *hash, unsigned char *curBuf, ui
 	((uint32_t*)&curBuf[0])[8] = nonce;
 
 	intermediate = verusclhashv2_2(data_key, curBuf, 511, fixrand, fixrandex, g_prand, g_prandex);
+
+	__builtin_prefetch(&data_key[fixrand[0]],1,0);
+	__builtin_prefetch(&data_key[fixrandex[0]],1,0);
+	__builtin_prefetch(&g_prand[fixrand[0]],0,0);
+	__builtin_prefetch(&g_prandex[fixrandex[0]],0,0);
+
 		//FillExtra
 	__m128i fill2 = _mm_shuffle_epi8(_mm_loadl_epi64((u128 *)&intermediate), shuf2);
 	_mm_store_si128((u128 *)(&curBuf[32 + 16]), fill2);
 	curBuf[32 + 15] = *((unsigned char *)&intermediate);
 	intermediate &= 511;
 	haraka512_keyed(hash, curBuf, data_key + intermediate);
+
+	__builtin_prefetch(&data_key[272],1,3);
+	__builtin_prefetch(&g_prand[272],0,3);
+	__builtin_prefetch(&g_prandex[272],0,3);
+
 	FixKey(fixrand, fixrandex, data_key, g_prand, g_prandex);
 }
 #ifdef _WIN32
@@ -171,12 +183,13 @@ extern "C" int scanhash_verus(int thr_id, struct work *work, uint32_t max_nonce,
 	uint8_t gpuinit = 0;
 	// struct timeval tv_start, tv_end, diff;
 	// double secs, solps;
-	u128 *data_key =  (u128*)malloc(VERUS_KEY_SIZE + 1024);
+	// __m128i *data_key =  (__m128i*)malloc(VERUS_KEY_SIZE + 1024);
+	__m128i  data_key[VERUS_KEY_SIZE + 1024] __attribute__ ((aligned(64)))  = { 0 }  ;
 
 	//u128 *data_key_master = NULL;
 //	posix_memalign((void**)&data_key, sizeof(__m128i), VERUS_KEY_SIZE);
-	u128 *data_key_prand = data_key + VERUS_KEY_SIZE128 ;
-	u128 *data_key_prandex = data_key + VERUS_KEY_SIZE128 + 32;
+	__m128i *data_key_prand = data_key + VERUS_KEY_SIZE128 ;
+	__m128i *data_key_prandex = data_key + VERUS_KEY_SIZE128 + 32;
   //u128 data_key[VERUS_KEY_SIZE128] = { 0 }; // 552 required
 	//u128 data_key_master[VERUS_KEY_SIZE128] = { 0 };
 	uint32_t nonce_buf = 0;
@@ -242,7 +255,7 @@ out:
 	// printf("ThreadID: %i -- %d h/s", thr_id, solps);
 
 	pdata[NONCE_OFT] = ((uint32_t*)full_data)[NONCE_OFT] + 1;
-	free(data_key);
+	//free(data_key);
 	//free(data_key_master);
 	return work->valid_nonces;
 }
