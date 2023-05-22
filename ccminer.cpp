@@ -670,8 +670,9 @@ static void calc_network_diff(struct work *work)
 {
 	
 	if (opt_algo == ALGO_EQUIHASH) {
-		net_diff = equi_network_diff(work);
-		return;
+            // net_diff = equi_network_diff(work);
+            net_diff = verus_network_diff(work);
+            return;
 	}
 
 	
@@ -1013,7 +1014,7 @@ static bool submit_upstream_work(CURL *curl, struct work *work)
 
 		if (net_diff && stratum.sharediff > net_diff && (opt_debug || opt_debug_diff))
 			applog(LOG_INFO, "share diff: %.5f, possible block found!!!",
-				stratum.sharediff);
+					stratum.sharediff);
 		else if (opt_debug_diff)
 			applog(LOG_DEBUG, "share diff: %.5f (x %.1f)",
 				stratum.sharediff, work->shareratio[idnonce]);
@@ -1600,7 +1601,7 @@ static bool stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		memcpy(&work->data[9], sctx->job.coinbase, 32+32); // merkle [9..16] + reserved
 		work->data[25] = le32dec(sctx->job.ntime);
 		work->data[26] = le32dec(sctx->job.nbits);
-		work->hash_ver = sctx->job.hash_ver;
+		memcpy(&work->solution, sctx->job.solution,1344);
 		memcpy(&work->data[27], sctx->xnonce1, sctx->xnonce1_size & 0x1F); // pool extranonce
 		work->data[35] = 0x80;
 		//applog_hex(work->data, 140);
@@ -1707,6 +1708,7 @@ static bool stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 			work_set_target(work, sctx->job.diff / (128.0 * opt_difficulty));
 			break;
 		case ALGO_EQUIHASH:
+			memcpy(work->target, sctx->job.extra, 32);
 			equi_work_set_target(work, sctx->job.diff / opt_difficulty);
 			break;
 		default:
@@ -1970,7 +1972,7 @@ static void *miner_thread(void *userdata)
 			nonceptr[0]++; //??
 
 		if (opt_algo == ALGO_EQUIHASH) {
-			nonceptr[1]++;
+			nonceptr[1] = (rand()*4);
 			nonceptr[2] |= thr_id;  //try  was nonceptr[1] |= thr_id << 24 monkins edit
 			//applog_hex(&work.data[27], 32);
 		} 
@@ -2299,9 +2301,7 @@ static void *miner_thread(void *userdata)
 		if (!opt_quiet && loopcnt > 1 && (time(NULL) - tm_rate_log) > opt_maxlograte) {
 			format_hashrate(thr_hashrates[thr_id], s);
 			if(thr_hashrates[thr_id]>0)
-			{
-				gpulog(LOG_INFO, thr_id, s);
-			}
+			gpulog(LOG_INFO, thr_id, "%s, %s", device_name[dev_id], s);
 			tm_rate_log = time(NULL);
 		}
 

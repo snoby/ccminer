@@ -348,6 +348,7 @@ struct stats_data {
 	uint8_t npool;
 	uint8_t pool_type;
 	uint16_t align;
+	uint32_t globalhashcount;
 };
 
 struct hashlog_data {
@@ -544,7 +545,7 @@ struct stratum_job {
 	uint32_t height;
 	uint32_t shares_count;
 	double diff;
-	int hash_ver;
+	unsigned char solution[1344];
 };
 
 struct stratum_ctx {
@@ -618,7 +619,7 @@ struct work {
 	struct tx txs[POK_MAX_TXS];
 	// zec solution
 	uint8_t extra[1388];
-	int hash_ver;
+	uint8_t solution[1344];
 };
 
 #define POK_BOOL_MASK 0x00008000
@@ -709,6 +710,7 @@ void equi_work_set_target(struct work* work, double diff);
 void equi_store_work_solution(struct work* work, uint32_t* hash, void* sol_data);
 int equi_verify_sol(void * const hdr, void * const sol);
 double equi_network_diff(struct work *work);
+double verus_network_diff(struct work *work);
 
 void hashlog_remember_submit(struct work* work, uint32_t nonce);
 void hashlog_remember_scan_range(struct work* work);

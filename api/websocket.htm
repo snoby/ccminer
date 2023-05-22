@@ -18,7 +18,7 @@ function drawChart(ip) {
 			type: 'spline'
 		},
 		title: {
-			text: 'ccMiner WebSocket Sample - ' + ip,
+			text: 'Worker Stats - ' + ip,
 			x: -20 //center
 		},
 		subtitle: {
@@ -50,12 +50,8 @@ function drawChart(ip) {
 		},
 		series: [
 			{
-				name: 'GPU0',
+				name: 'CPU',
 				data: hashrates[0]
-			},
-			{
-				name: 'GPU1',
-				data: hashrates[1]
 			}
 		]
 	});
