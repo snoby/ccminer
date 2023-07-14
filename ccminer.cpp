@@ -1722,6 +1722,9 @@ static bool stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		if (opt_showdiff && work->targetdiff != stratum_diff)
 			snprintf(sdiff, 32, " (%.5f)", work->targetdiff);
 		applog(LOG_WARNING, "Stratum difficulty set to %g%s", stratum_diff, sdiff);
+      // rms test
+      g_work_time = 0;
+		restart_threads();
 	}
 
 	return true;
