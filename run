@@ -1,5 +1,5 @@
 #!/bin/bash
-export VerusThreads=24
+export VerusThreads=1
 export PoolHost=verus.aninterestinghole.xyz
 export Port=9998
 export PublicVerusCoinAddress=RNBV5hhpoPceg4JiKTWKbkeQzPDPKUZDM6

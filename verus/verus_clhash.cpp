@@ -418,62 +418,65 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 		fixrand[i] = prand_idx;
 		fixrandex[i] = prandex_idx;
 
+		int iSelector = (selector & 1) ? -1 : 1;
+
 		switch (selector & 0x1c)
 		{
 		case 0:
 		{
-			// const __m128i temp1 = _mm_load_si128(prandex);
+			const __m128i temp1 = _mm_load_si128(prandex);
 			// const __m128i temp2 = pbuf[(selector & 1) ? -1 : 1];
-			// const __m128i add1 = _mm_xor_si128(temp1, temp2);
-			// const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
-			// acc = _mm_xor_si128(clprod1, acc);
-
-			// const __m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
-			// const __m128i tempa2 = _mm_xor_si128(tempa1, temp1);
-
-			// const __m128i temp12 = _mm_load_si128(prand);
-			// _mm_store_si128(prand, tempa2);
-
-			// const __m128i temp22 = _mm_load_si128(pbuf);
-			// const __m128i add12 = _mm_xor_si128(temp12, temp22);
-			// const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
-			// acc = _mm_xor_si128(clprod12, acc);
-
-			// const __m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
-			// const __m128i tempb2 = _mm_xor_si128(tempb1, temp12);
-			// _mm_store_si128(prandex, tempb2);
-
-			__m128i temp1 = _mm_load_si128(prandex);  // Load prandex once
-			__m128i temp12 = _mm_load_si128(prand);   // Load prand once
-
-			// Precompute the conditional offset for pbuf to minimize branch overhead
-			// __m128i temp2 = pbuf[((selector & 1) ? -1 : 1)];
-
-			const __m128i *pbuf_offset = pbuf + ((selector & 1) ? -1 : 1);  // Adjusted pointer arithmetic
-			__m128i temp2 = _mm_load_si128(pbuf_offset);
-
-			// Compute add1 and clprod1
-			__m128i add1 = _mm_xor_si128(temp1, temp2);
-			__m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
+			const __m128i temp2 = pbuf[iSelector];
+			const __m128i add1 = _mm_xor_si128(temp1, temp2);
+			const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 			acc = _mm_xor_si128(clprod1, acc);
 
-			// Compute tempa1 and tempa2
-			__m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
-			__m128i tempa2 = _mm_xor_si128(tempa1, temp1);
-			_mm_store_si128(prand, tempa2);  // Store tempa2 to prand
+			const __m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
+			const __m128i tempa2 = _mm_xor_si128(tempa1, temp1);
 
-			// Load pbuf directly for the next computation
-			__m128i temp22 = _mm_load_si128(pbuf);
+			const __m128i temp12 = _mm_load_si128(prand);
+			_mm_store_si128(prand, tempa2);
 
-			// Compute add12 and clprod12
-			__m128i add12 = _mm_xor_si128(temp12, temp22);
-			__m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
+			const __m128i temp22 = _mm_load_si128(pbuf);
+			const __m128i add12 = _mm_xor_si128(temp12, temp22);
+			const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
 			acc = _mm_xor_si128(clprod12, acc);
 
-			// Compute tempb1 and tempb2
-			__m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
-			__m128i tempb2 = _mm_xor_si128(tempb1, temp12);
-			_mm_store_si128(prandex, tempb2);  // Store tempb2 to prandex
+			const __m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
+			const __m128i tempb2 = _mm_xor_si128(tempb1, temp12);
+			_mm_store_si128(prandex, tempb2);
+
+			// __m128i temp1 = _mm_load_si128(prandex);  // Load prandex once
+			// __m128i temp12 = _mm_load_si128(prand);   // Load prand once
+
+			// // Precompute the conditional offset for pbuf to minimize branch overhead
+			// // __m128i temp2 = pbuf[((selector & 1) ? -1 : 1)];
+
+			// const __m128i *pbuf_offset = pbuf + iSelector;  // Adjusted pointer arithmetic
+			// __m128i temp2 = _mm_load_si128(pbuf_offset);
+
+			// // Compute add1 and clprod1
+			// __m128i add1 = _mm_xor_si128(temp1, temp2);
+			// __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
+			// acc = _mm_xor_si128(clprod1, acc);
+
+			// // Compute tempa1 and tempa2
+			// __m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
+			// __m128i tempa2 = _mm_xor_si128(tempa1, temp1);
+			// _mm_store_si128(prand, tempa2);  // Store tempa2 to prand
+
+			// // Load pbuf directly for the next computation
+			// __m128i temp22 = _mm_load_si128(pbuf);
+
+			// // Compute add12 and clprod12
+			// __m128i add12 = _mm_xor_si128(temp12, temp22);
+			// __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
+			// acc = _mm_xor_si128(clprod12, acc);
+
+			// // Compute tempb1 and tempb2
+			// __m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
+			// __m128i tempb2 = _mm_xor_si128(tempb1, temp12);
+			// _mm_store_si128(prandex, tempb2);  // Store tempb2 to prandex
 
 			break;
 		}
@@ -494,7 +497,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 			_mm_store_si128(prandex, tempa2);
 
 			// const __m128i temp22 = pbuf[(selector & 1) ? -1 : 1];
-			const __m128i *pbuf_offset = (selector & 1) ? &pbuf[-1] : &pbuf[1];
+			const __m128i *pbuf_offset = &pbuf[iSelector] ;
 			__m128i temp22 = _mm_load_si128(pbuf_offset);
 			const __m128i add12 = _mm_xor_si128(temp12, temp22);
 			acc = _mm_xor_si128(add12, acc);
@@ -509,71 +512,73 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 		}
 		case 8:
 		{
-			// const __m128i temp1 = _mm_load_si128(prandex);
-			// const __m128i temp2 = _mm_load_si128(pbuf);
-			// const __m128i add1 = _mm_xor_si128(temp1, temp2);
-			// acc = _mm_xor_si128(add1, acc);
+			const __m128i temp1 = _mm_load_si128(prandex);
+			const __m128i temp2 = _mm_load_si128(pbuf);
+			const __m128i add1 = _mm_xor_si128(temp1, temp2);
+			acc = _mm_xor_si128(add1, acc);
 
-			// const __m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
-			// const __m128i tempa2 = _mm_xor_si128(tempa1, temp1);
+			const __m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
+			const __m128i tempa2 = _mm_xor_si128(tempa1, temp1);
 
-			// const __m128i temp12 = _mm_load_si128(prand);
-			// _mm_store_si128(prand, tempa2);
-
-			// // const __m128i temp22 = pbuf[(selector & 1) ? -1 : 1];
-			// const __m128i *pbuf_offset = (selector & 1) ? &pbuf[-1] : &pbuf[1];
-			// __m128i temp22 = _mm_load_si128(pbuf_offset);
-
-			// const __m128i add12 = _mm_xor_si128(temp12, temp22);
-			// const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
-			// acc = _mm_xor_si128(clprod12, acc);
-			// const __m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
-			// acc = _mm_xor_si128(clprod22, acc);
-
-			// const __m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
-			// const __m128i tempb2 = _mm_xor_si128(tempb1, temp12);
-			// _mm_store_si128(prandex, tempb2);
-
-			// Load prandex and pbuf
-			__m128i temp1 = _mm_load_si128(prandex);
-			__m128i temp2 = _mm_load_si128(pbuf);
-
-			// XOR temp1 and temp2, then update acc
-			acc = _mm_xor_si128(_mm_xor_si128(temp1, temp2), acc);
-
-			// Perform first multiplication and XOR
-			__m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
-			__m128i tempa2 = _mm_xor_si128(tempa1, temp1);
-
-			// Store tempa2 in prand
-			__m128i temp12 = _mm_load_si128(prand);
+			const __m128i temp12 = _mm_load_si128(prand);
 			_mm_store_si128(prand, tempa2);
 
-			// Load prand and determine pbuf offset
-			
-			const __m128i *pbuf_offset = (selector & 1) ? &pbuf[-1] : &pbuf[1];
+			// const __m128i temp22 = pbuf[(selector & 1) ? -1 : 1];
+			// const __m128i *pbuf_offset = (selector & 1) ? &pbuf[-1] : &pbuf[1];
+			const __m128i *pbuf_offset = &pbuf[iSelector];
 			__m128i temp22 = _mm_load_si128(pbuf_offset);
 
-			// Compute XOR and carry-less product (CLMUL)
-			__m128i add12 = _mm_xor_si128(temp12, temp22);
-			__m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
-			acc = _mm_xor_si128(acc, clprod12);
+			const __m128i add12 = _mm_xor_si128(temp12, temp22);
+			const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
+			acc = _mm_xor_si128(clprod12, acc);
+			const __m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
+			acc = _mm_xor_si128(clprod22, acc);
 
-			// Perform second CLMUL and update acc
-			__m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
-			acc = _mm_xor_si128(acc, clprod22);
-
-			// Perform second multiplication and XOR, then store result in prandex
-			__m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
-			__m128i tempb2 = _mm_xor_si128(tempb1, temp12);
+			const __m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
+			const __m128i tempb2 = _mm_xor_si128(tempb1, temp12);
 			_mm_store_si128(prandex, tempb2);
+
+			// Load prandex and pbuf
+			// __m128i temp1 = _mm_load_si128(prandex);
+			// __m128i temp2 = _mm_load_si128(pbuf);
+
+			// // XOR temp1 and temp2, then update acc
+			// acc = _mm_xor_si128(_mm_xor_si128(temp1, temp2), acc);
+
+			// // Perform first multiplication and XOR
+			// __m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
+			// __m128i tempa2 = _mm_xor_si128(tempa1, temp1);
+
+			// // Store tempa2 in prand
+			// __m128i temp12 = _mm_load_si128(prand);
+			// _mm_store_si128(prand, tempa2);
+
+			// // Load prand and determine pbuf offset
+			
+			// const __m128i *pbuf_offset = &pbuf[iSelector] ;
+			// __m128i temp22 = _mm_load_si128(pbuf_offset);
+
+			// // Compute XOR and carry-less product (CLMUL)
+			// __m128i add12 = _mm_xor_si128(temp12, temp22);
+			// __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
+			// acc = _mm_xor_si128(acc, clprod12);
+
+			// // Perform second CLMUL and update acc
+			// __m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
+			// acc = _mm_xor_si128(acc, clprod22);
+
+			// // Perform second multiplication and XOR, then store result in prandex
+			// __m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
+			// __m128i tempb2 = _mm_xor_si128(tempb1, temp12);
+			// _mm_store_si128(prandex, tempb2);
 
 			break;
 		}
 		case 0xc:
 		{
 			const __m128i temp1 = _mm_load_si128(prand);
-			const __m128i temp2 = pbuf[(selector & 1) ? -1 : 1];
+			// const __m128i temp2 = pbuf[(selector & 1) ? -1 : 1];
+			const __m128i temp2 = pbuf[iSelector];
 			const __m128i add1 = _mm_xor_si128(temp1, temp2);
 
 			// cannot be zero here
@@ -610,6 +615,51 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 				_mm_store_si128(prandex, tempa2);
 				acc = _mm_xor_si128(_mm_load_si128(pbuf), acc);
 			}
+
+			// Load prand and compute pbuf offset
+			// __m128i temp1 = _mm_load_si128(prand);
+			// const __m128i *pbuf_offset = &pbuf[iSelector];
+			// __m128i temp2 = _mm_load_si128(pbuf_offset);
+
+			// // Compute add1 and update acc
+			// __m128i add1 = _mm_xor_si128(temp1, temp2);
+			// acc = _mm_xor_si128(add1, acc);
+
+			// // Compute modulo and update acc
+			// int64_t dividend = _mm_cvtsi128_si64(acc);
+			// int32_t modulo_result = dividend % (int32_t)selector; // Cannot be zero
+			// __m128i modulo = _mm_cvtsi32_si128(modulo_result);
+			// acc = _mm_xor_si128(modulo, acc);
+
+			// // Perform multiply and XOR with temp1
+			// __m128i tempa1 = _mm_mulhrs_epi16(acc, temp1);
+			// __m128i tempa2 = _mm_xor_si128(tempa1, temp1);
+
+			// if (dividend & 1) {
+			// 	// If dividend is odd
+			// 	__m128i temp12 = _mm_load_si128(prandex);
+			// 	_mm_store_si128(prandex, tempa2);
+
+			// 	__m128i temp22 = _mm_load_si128(pbuf);
+			// 	__m128i add12 = _mm_xor_si128(temp12, temp22);
+
+			// 	// Carry-less product and update acc
+			// 	__m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
+			// 	acc = _mm_xor_si128(clprod12, acc);
+
+			// 	__m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
+			// 	acc = _mm_xor_si128(clprod22, acc);
+
+			// 	// Multiply and XOR for prand update
+			// 	__m128i tempb1 = _mm_mulhrs_epi16(acc, temp12);
+			// 	__m128i tempb2 = _mm_xor_si128(tempb1, temp12);
+			// 	_mm_store_si128(prand, tempb2);
+			// } else {
+			// 	// If dividend is even
+			// 	_mm_store_si128(prand, _mm_load_si128(prandex));
+			// 	_mm_store_si128(prandex, tempa2);
+			// 	acc = _mm_xor_si128(_mm_load_si128(pbuf), acc);
+			// }
 			break;
 		}
 		case 0x10:
@@ -618,7 +668,8 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 			const __m128i *rc = prand;
 			__m128i tmp;
 
-			__m128i temp1 = pbuf[(selector & 1) ? -1 : 1];
+			// __m128i temp1 = pbuf[(selector & 1) ? -1 : 1];
+			__m128i temp1 = pbuf[iSelector];
 			__m128i temp2 = _mm_load_si128(pbuf);
 
 			AES2(temp1, temp2, 0);
@@ -638,12 +689,38 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 			_mm_store_si128(prand, _mm_load_si128(prandex));
 			_mm_store_si128(prandex, _mm_xor_si128(tempa1, tempa2));
 
+			// // Load initial values and calculate pbuf offset
+			// const __m128i *rc = prand;  // Alias for prand
+			// __m128i temp1 = _mm_load_si128(&pbuf[iSelector]);  // Conditional offset access
+			// __m128i temp2 = _mm_load_si128(pbuf);
+
+			// // Perform AES2 and MIX2 operations in a pipelined sequence
+			// AES2(temp1, temp2, 0);
+			// MIX2(temp1, temp2);
+
+			// AES2(temp1, temp2, 4);
+			// MIX2(temp1, temp2);
+
+			// AES2(temp1, temp2, 8);
+			// MIX2(temp1, temp2);
+
+			// // Update acc with XOR of temp1 and temp2
+			// acc = _mm_xor_si128(acc, _mm_xor_si128(temp1, temp2));
+
+			// // Load prand and perform multiplication
+			// __m128i tempa1 = _mm_load_si128(prand);
+			// __m128i tempa2 = _mm_mulhrs_epi16(acc, tempa1);
+
+			// // Store values into prand and prandex
+			// _mm_store_si128(prand, _mm_load_si128(prandex));
+			// _mm_store_si128(prandex, _mm_xor_si128(tempa1, tempa2));
+
 			break;
 		}
 		case 0x14:
 		{
 			// we'll just call this one the monkins loop, inspired by Chris - modified to cast to uint64_t on shift for more variability in the loop
-			const __m128i *buftmp = &pbuf[(selector & 1) ? -1 : 1];
+			const __m128i *buftmp = &pbuf[iSelector];
 			__m128i tmp; // used by MIX2
 
 			uint64_t rounds = selector >> 61; // loop randomly between 1 and 8 times
@@ -680,11 +757,46 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 			const __m128i tempa4 = _mm_load_si128(prandex);
 			_mm_store_si128(prandex, tempa3);
 			_mm_store_si128(prand, tempa4);
+
+			// const __m128i *buftmp = &pbuf[iSelector];
+			// uint64_t rounds = selector >> 61; // Loop between 1 and 8 times
+			// __m128i *rc = prand;
+			// uint64_t aesroundoffset = 0;
+			// __m128i tmp;
+
+			// // Perform the loop with reduced branching
+			// do {
+			// 	__m128i temp2;
+			// 	if (selector & (((uint64_t)0x10000000) << rounds)) {
+			// 		temp2 = _mm_load_si128((rounds & 1) ? pbuf : buftmp);
+			// 		__m128i add1 = _mm_xor_si128(*rc, temp2); rc++;
+			// 		__m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
+			// 		acc = _mm_xor_si128(acc, clprod1);
+			// 	} else {
+			// 		__m128i onekey = _mm_load_si128(rc++);
+			// 		temp2 = _mm_load_si128((rounds & 1) ? buftmp : pbuf);
+			// 		AES2(onekey, temp2, aesroundoffset);
+			// 		aesroundoffset += 4;
+			// 		MIX2(onekey, temp2);
+			// 		acc = _mm_xor_si128(acc, _mm_xor_si128(onekey, temp2));
+			// 	}
+			// } while (rounds--);
+
+			// // Final operations: process and store results
+			// __m128i tempa1 = _mm_load_si128(prand);
+			// __m128i tempa2 = _mm_mulhrs_epi16(acc, tempa1);
+			// __m128i tempa3 = _mm_xor_si128(tempa1, tempa2);
+
+			// __m128i tempa4 = _mm_load_si128(prandex);
+			// _mm_store_si128(prandex, tempa3);
+			// _mm_store_si128(prand, tempa4);
+
+
 			break;
 		}
 		case 0x18:
 		{
-			const __m128i *buftmp = &pbuf[(selector & 1) ? -1 : 1];
+			const __m128i *buftmp = &pbuf[iSelector];
 			__m128i tmp; // used by MIX2
 
 			uint64_t rounds = selector >> 61; // loop randomly between 1 and 8 times
@@ -737,7 +849,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeatv2_2(__m128i *randomsource, c
 			_mm_store_si128(prand, tempa2);
 
 			acc = _mm_xor_si128(tempa3, acc);
-			const __m128i temp4 = pbuf[(selector & 1) ? -1 : 1];
+			const __m128i temp4 = pbuf[iSelector];
 			acc = _mm_xor_si128(temp4, acc);
 			const __m128i tempb1 = _mm_mulhrs_epi16(acc, tempa3);
 			*prandex = _mm_xor_si128(tempb1, tempa3);
