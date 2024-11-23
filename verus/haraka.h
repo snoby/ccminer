@@ -43,11 +43,19 @@ extern u128 rc[40];
 #define LOAD(src) _mm_load_si128((u128 *)(src))
 #define STORE(dest,src) _mm_storeu_si128((u128 *)(dest),src)
 
+// #define AES2(s0, s1, rci) \
+//   s0 = _mm_aesenc_si128(s0, rc[rci]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+//   s0 = _mm_aesenc_si128(s0, rc[rci + 2]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 3]);
+
 #define AES2(s0, s1, rci) \
-  s0 = _mm_aesenc_si128(s0, rc[rci]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
-  s0 = _mm_aesenc_si128(s0, rc[rci + 2]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 3]);
+do { \
+    __m128i tmp0 = _mm_aesenc_si128(s0, rc[rci]); \
+    __m128i tmp1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+    s0 = _mm_aesenc_si128(tmp0, rc[rci + 2]); \
+    s1 = _mm_aesenc_si128(tmp1, rc[rci + 3]); \
+} while (0)
 
 #define AES2_4x(s0, s1, s2, s3, rci) \
   AES2(s0[0], s0[1], rci); \
@@ -59,15 +67,27 @@ extern u128 rc[40];
   AES2_4x(s0, s1, s2, s3, rci); \
   AES2_4x(s4, s5, s6, s7, rci);
 
+// #define AES4(s0, s1, s2, s3, rci) \
+//   s0 = _mm_aesenc_si128(s0, rc[rci]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+//   s2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
+//   s3 = _mm_aesenc_si128(s3, rc[rci + 3]); \
+//   s0 = _mm_aesenc_si128(s0, rc[rci + 4]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 5]); \
+//   s2 = _mm_aesenc_si128(s2, rc[rci + 6]); \
+//   s3 = _mm_aesenc_si128(s3, rc[rci + 7]); \
+
 #define AES4(s0, s1, s2, s3, rci) \
-  s0 = _mm_aesenc_si128(s0, rc[rci]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
-  s2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
-  s3 = _mm_aesenc_si128(s3, rc[rci + 3]); \
-  s0 = _mm_aesenc_si128(s0, rc[rci + 4]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 5]); \
-  s2 = _mm_aesenc_si128(s2, rc[rci + 6]); \
-  s3 = _mm_aesenc_si128(s3, rc[rci + 7]); \
+do { \
+  __m128i temp0 = _mm_aesenc_si128(s0, rc[rci]); \
+  __m128i temp1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+  __m128i temp2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
+  __m128i temp3 = _mm_aesenc_si128(s3, rc[rci + 3]); \
+  s0 = _mm_aesenc_si128(temp0, rc[rci + 4]); \
+  s1 = _mm_aesenc_si128(temp1, rc[rci + 5]); \
+  s2 = _mm_aesenc_si128(temp2, rc[rci + 6]); \
+  s3 = _mm_aesenc_si128(temp3, rc[rci + 7]); \
+} while (0)
 
 #define AES4_zero(s0, s1, s2, s3, rci) \
   s0 = _mm_aesenc_si128(s0, rc0[rci]); \
@@ -89,21 +109,39 @@ extern u128 rc[40];
   AES4_4x(s0, s1, s2, s3, rci); \
   AES4_4x(s4, s5, s6, s7, rci);
 
+// #define MIX2(s0, s1) \
+//   tmp = _mm_unpacklo_epi32(s0, s1); \
+//   s1 = _mm_unpackhi_epi32(s0, s1); \
+//   s0 = tmp;
+
 #define MIX2(s0, s1) \
-  tmp = _mm_unpacklo_epi32(s0, s1); \
-  s1 = _mm_unpackhi_epi32(s0, s1); \
-  s0 = tmp;
+do { \
+    __m128i tmp = _mm_unpacklo_epi32(s0, s1); \
+    s1 = _mm_unpackhi_epi32(s0, s1); \
+    s0 = tmp; \
+} while (0)
+
+// #define MIX4(s0, s1, s2, s3) \
+//   tmp  = _mm_unpacklo_epi32(s0, s1); \
+//   s0 = _mm_unpackhi_epi32(s0, s1); \
+//   s1 = _mm_unpacklo_epi32(s2, s3); \
+//   s2 = _mm_unpackhi_epi32(s2, s3); \
+//   s3 = _mm_unpacklo_epi32(s0, s2); \
+//   s0 = _mm_unpackhi_epi32(s0, s2); \
+//   s2 = _mm_unpackhi_epi32(s1, tmp); \
+//   s1 = _mm_unpacklo_epi32(s1, tmp);
 
 #define MIX4(s0, s1, s2, s3) \
-  tmp  = _mm_unpacklo_epi32(s0, s1); \
-  s0 = _mm_unpackhi_epi32(s0, s1); \
-  s1 = _mm_unpacklo_epi32(s2, s3); \
-  s2 = _mm_unpackhi_epi32(s2, s3); \
-  s3 = _mm_unpacklo_epi32(s0, s2); \
-  s0 = _mm_unpackhi_epi32(s0, s2); \
-  s2 = _mm_unpackhi_epi32(s1, tmp); \
-  s1 = _mm_unpacklo_epi32(s1, tmp);
-
+do { \
+  __m128i tmp0 = _mm_unpacklo_epi32(s0, s1); \
+  __m128i tmp1 = _mm_unpackhi_epi32(s0, s1); \
+  __m128i tmp2 = _mm_unpacklo_epi32(s2, s3); \
+  __m128i tmp3 = _mm_unpackhi_epi32(s2, s3); \
+  s3 = _mm_unpacklo_epi32(tmp1, tmp3); \
+  s0 = _mm_unpackhi_epi32(tmp1, tmp3); \
+  s2 = _mm_unpackhi_epi32(tmp2, tmp0); \
+  s1 = _mm_unpacklo_epi32(tmp2, tmp0); \
+} while (0)
 
 /*
 The MIT License (MIT)
@@ -149,11 +187,19 @@ extern u128 rc[40];
 #define LOAD(src) _mm_load_si128((u128 *)(src))
 #define STORE(dest,src) _mm_storeu_si128((u128 *)(dest),src)
 
+// #define AES2(s0, s1, rci) \
+//   s0 = _mm_aesenc_si128(s0, rc[rci]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+//   s0 = _mm_aesenc_si128(s0, rc[rci + 2]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 3]);
+
 #define AES2(s0, s1, rci) \
-  s0 = _mm_aesenc_si128(s0, rc[rci]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
-  s0 = _mm_aesenc_si128(s0, rc[rci + 2]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 3]);
+do { \
+    __m128i tmp0 = _mm_aesenc_si128(s0, rc[rci]); \
+    __m128i tmp1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+    s0 = _mm_aesenc_si128(tmp0, rc[rci + 2]); \
+    s1 = _mm_aesenc_si128(tmp1, rc[rci + 3]); \
+} while (0)
 
 #define AES2_4x(s0, s1, s2, s3, rci) \
   AES2(s0[0], s0[1], rci); \
@@ -165,20 +211,37 @@ extern u128 rc[40];
   AES2_4x(s0, s1, s2, s3, rci); \
   AES2_4x(s4, s5, s6, s7, rci);
 
+// #define AES4(s0, s1, s2, s3, rci) \
+//   s0 = _mm_aesenc_si128(s0, rc[rci]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+//   s2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
+//   s3 = _mm_aesenc_si128(s3, rc[rci + 3]); \
+//   s0 = _mm_aesenc_si128(s0, rc[rci + 4]); \
+//   s1 = _mm_aesenc_si128(s1, rc[rci + 5]); \
+//   s2 = _mm_aesenc_si128(s2, rc[rci + 6]); \
+//   s3 = _mm_aesenc_si128(s3, rc[rci + 7]); \
+
 #define AES4(s0, s1, s2, s3, rci) \
-  s0 = _mm_aesenc_si128(s0, rc[rci]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
-  s2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
-  s3 = _mm_aesenc_si128(s3, rc[rci + 3]); \
-  s0 = _mm_aesenc_si128(s0, rc[rci + 4]); \
-  s1 = _mm_aesenc_si128(s1, rc[rci + 5]); \
-  s2 = _mm_aesenc_si128(s2, rc[rci + 6]); \
-  s3 = _mm_aesenc_si128(s3, rc[rci + 7]); \
+do { \
+  __m128i temp0 = _mm_aesenc_si128(s0, rc[rci]); \
+  __m128i temp1 = _mm_aesenc_si128(s1, rc[rci + 1]); \
+  __m128i temp2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
+  __m128i temp3 = _mm_aesenc_si128(s3, rc[rci + 3]); \
+  s0 = _mm_aesenc_si128(temp0, rc[rci + 4]); \
+  s1 = _mm_aesenc_si128(temp1, rc[rci + 5]); \
+  s2 = _mm_aesenc_si128(temp2, rc[rci + 6]); \
+  s3 = _mm_aesenc_si128(temp3, rc[rci + 7]); \
+} while (0)
+
+// #define AES4_LAST(s0, s1, s2, s3, rci) \
+//   s2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
+//   s2 = _mm_aesenc_si128(s2, rc[rci + 6]); 
 
 #define AES4_LAST(s0, s1, s2, s3, rci) \
-  s2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
-  s2 = _mm_aesenc_si128(s2, rc[rci + 6]); 
-
+do { \
+  __m128i temp0 = _mm_aesenc_si128(s2, rc[rci + 2]); \
+  s2 = _mm_aesenc_si128(temp0, rc[rci + 6]); \
+} while (0)
 
 #define AES4_zero(s0, s1, s2, s3, rci) \
   s0 = _mm_aesenc_si128(s0, rc0[rci]); \
@@ -200,25 +263,51 @@ extern u128 rc[40];
   AES4_4x(s0, s1, s2, s3, rci); \
   AES4_4x(s4, s5, s6, s7, rci);
 
+// #define MIX2(s0, s1) \
+//   tmp = _mm_unpacklo_epi32(s0, s1); \
+//   s1 = _mm_unpackhi_epi32(s0, s1); \
+//   s0 = tmp;
+
 #define MIX2(s0, s1) \
-  tmp = _mm_unpacklo_epi32(s0, s1); \
-  s1 = _mm_unpackhi_epi32(s0, s1); \
-  s0 = tmp;
+do { \
+    __m128i tmp = _mm_unpacklo_epi32(s0, s1); \
+    s1 = _mm_unpackhi_epi32(s0, s1); \
+    s0 = tmp; \
+} while (0)
+// #define MIX4(s0, s1, s2, s3) \
+//   tmp  = _mm_unpacklo_epi32(s0, s1); \
+//   s0 = _mm_unpackhi_epi32(s0, s1); \
+//   s1 = _mm_unpacklo_epi32(s2, s3); \
+//   s2 = _mm_unpackhi_epi32(s2, s3); \
+//   s3 = _mm_unpacklo_epi32(s0, s2); \
+//   s0 = _mm_unpackhi_epi32(s0, s2); \
+//   s2 = _mm_unpackhi_epi32(s1, tmp); \
+//   s1 = _mm_unpacklo_epi32(s1, tmp);
 
 #define MIX4(s0, s1, s2, s3) \
-  tmp  = _mm_unpacklo_epi32(s0, s1); \
-  s0 = _mm_unpackhi_epi32(s0, s1); \
-  s1 = _mm_unpacklo_epi32(s2, s3); \
-  s2 = _mm_unpackhi_epi32(s2, s3); \
-  s3 = _mm_unpacklo_epi32(s0, s2); \
-  s0 = _mm_unpackhi_epi32(s0, s2); \
-  s2 = _mm_unpackhi_epi32(s1, tmp); \
-  s1 = _mm_unpacklo_epi32(s1, tmp);
+do { \
+  __m128i tmp0 = _mm_unpacklo_epi32(s0, s1); \
+  __m128i tmp1 = _mm_unpackhi_epi32(s0, s1); \
+  __m128i tmp2 = _mm_unpacklo_epi32(s2, s3); \
+  __m128i tmp3 = _mm_unpackhi_epi32(s2, s3); \
+  s3 = _mm_unpacklo_epi32(tmp1, tmp3); \
+  s0 = _mm_unpackhi_epi32(tmp1, tmp3); \
+  s2 = _mm_unpackhi_epi32(tmp2, tmp0); \
+  s1 = _mm_unpacklo_epi32(tmp2, tmp0); \
+} while (0)
+
+// #define MIX4_LAST(s0, s1, s2, s3) \
+//   tmp  = _mm_unpacklo_epi32(s0, s1); \
+//   s1 = _mm_unpacklo_epi32(s2, s3); \
+//   s2 = _mm_unpackhi_epi32(s1, tmp); 
 
 #define MIX4_LAST(s0, s1, s2, s3) \
-  tmp  = _mm_unpacklo_epi32(s0, s1); \
-  s1 = _mm_unpacklo_epi32(s2, s3); \
-  s2 = _mm_unpackhi_epi32(s1, tmp); 
+do { \
+  __m128i tmp0 = _mm_unpacklo_epi32(s0, s1); \
+  __m128i tmp1 = _mm_unpacklo_epi32(s2, s3); \
+  s2 = _mm_unpackhi_epi32(tmp1, tmp0); \
+  s1 = tmp1; \
+} while (0)
 
 #define TRUNCSTORE(out, s0, s1, s2, s3) \
   *(u64*)(out) = *(((u64*)&s0 + 1)); \

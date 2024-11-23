@@ -96,16 +96,48 @@ double stats_get_speed(int thr_id, double def_speed)
  */
 double stats_get_gpu_speed(int gpu_id)
 {
+	//rewrite to calculate the true average not the average of averages.  Should converge faster to true value
+	//in the presence of uneven hash counts per thread and outliers
 	double speed = 0.0;
+	int records = 0;
 
 	for (int thr_id=0; thr_id<opt_n_threads; thr_id++) {
 		int dev_id = device_map[thr_id];
 		if (gpu_id == -1 || dev_id == gpu_id)
-			speed += stats_get_speed(thr_id, 0.0);
+		{
+				std::map<uint64_t, stats_data>::reverse_iterator i = tlastscans.rbegin();
+				while (i != tlastscans.rend() && records < opt_statsavg) {
+					if (!i->second.ignored)
+					if (thr_id == -1 || i->second.thr_id == thr_id) {
+						if (i->second.hashcount > 1000) {
+							speed += i->second.hashrate;
+							records++;
+							// applog(LOG_BLUE, "%d %x %.1f", thr_id, i->second.thr_id, i->second.hashrate);
+						}
+					}
+					++i;
+				}
+		}
 	}
 
-	return speed;
+	if (records)
+		return speed * (double)opt_n_threads / (double)(records);
+	else
+		return 0.;
+
 }
+// double stats_get_gpu_speed(int gpu_id)
+// {
+// 	double speed = 0.0;
+
+// 	for (int thr_id=0; thr_id<opt_n_threads; thr_id++) {
+// 		int dev_id = device_map[thr_id];
+// 		if (gpu_id == -1 || dev_id == gpu_id)
+// 			speed += stats_get_speed(thr_id, 0.0);
+// 	}
+
+// 	return speed;
+// }
 
 /**
  * Export data for api calls

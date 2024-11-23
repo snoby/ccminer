@@ -828,9 +828,10 @@ int share_result(int result, int pooln, double sharediff, const char *reason)
 	struct pool_infos *p = &pools[pooln];
 
 	pthread_mutex_lock(&stats_lock);
-	for (int i = 0; i < opt_n_threads; i++) {
-		hashrate += stats_get_speed(i, thr_hashrates[i]);
-	}
+	// for (int i = 0; i < opt_n_threads; i++) {
+	// 	hashrate += stats_get_speed(i, thr_hashrates[i]);
+	// }
+	hashrate = stats_get_gpu_speed(-1);
 	pthread_mutex_unlock(&stats_lock);
 
 	result ? p->accepted_count++ : p->rejected_count++;
@@ -2272,7 +2273,7 @@ static void *miner_thread(void *userdata)
 				pthread_mutex_lock(&stats_lock);
 				thr_hashrates[thr_id] = hashes_done / dtime;
 				thr_hashrates[thr_id] *= rate_factor;
-				if (loopcnt > 2) // ignore first (init time)
+				// if (loopcnt > 2) // ignore first (init time)
 					stats_remember_speed(thr_id, hashes_done, thr_hashrates[thr_id], (uint8_t) rc, work.height);
 				pthread_mutex_unlock(&stats_lock);
 			}
