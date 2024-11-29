@@ -83,9 +83,8 @@ extern "C" inline void FixKey(uint32_t * __restrict fixrand, uint32_t * __restri
 }
 
 
- extern "C" inline void VerusHashHalf(void *result2, unsigned char *data,size_t len = 1487)
+ extern "C" inline void VerusHashHalf(void *result2, unsigned char *data, size_t len)
 {
-	// const size_t len = 1487;
 	alignas(32) unsigned char buf1[64] = { 0 }, buf2[64];
 	unsigned char *curBuf = buf1, *result = buf2;
 	size_t curPos = 0;
@@ -137,12 +136,9 @@ extern "C" void inline Verus2hash(unsigned char *hash, unsigned char *curBuf, un
 {
 	//uint64_t mask = VERUS_KEY_SIZE128; //552
 	static const __m128i shuf1 = _mm_setr_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0);
-	static const __m128i shuf2 = _mm_setr_epi8(1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0);
-
-	
 	const __m128i fill1 = _mm_shuffle_epi8(_mm_load_si128((u128 *)curBuf), shuf1);
-
-	const unsigned char ch = curBuf[0];
+	static const __m128i shuf2 = _mm_setr_epi8(1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0);
+	unsigned char ch = curBuf[0];
 	_mm_store_si128((u128 *)(&curBuf[32 + 16]), fill1);
 	curBuf[32 + 15] = ch;
 	//	FillExtra((u128 *)curBuf);
@@ -170,50 +166,6 @@ extern "C" void inline Verus2hash(unsigned char *hash, unsigned char *curBuf, un
 
 	FixKey(fixrand, fixrandex, data_key, g_prand, g_prandex);
 }
-
-// DOeS NOT WORK
-// extern "C" void inline Verus2hash(unsigned char *hash, unsigned char *curBuf, unsigned char *nonce,
-// 	__m128i * __restrict data_key, uint8_t *gpu_init, uint32_t * __restrict fixrand, uint32_t * __restrict fixrandex, __m128i * __restrict g_prand,
-// 	__m128i * __restrict g_prandex, int version)
-// {
-// 	static const __m128i shuf1 = _mm_setr_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0);
-// 	static const __m128i shuf2 = _mm_setr_epi8(1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0);
-
-// 	// Shuffle and store the first part of curBuf
-// 	__m128i fill1 = _mm_shuffle_epi8(_mm_load_si128(reinterpret_cast<__m128i *>(curBuf)), shuf1);
-// 	unsigned char ch = curBuf[0];
-// 	_mm_store_si128(reinterpret_cast<__m128i *>(&curBuf[32 + 16]), fill1);
-// 	curBuf[32 + 15] = ch;
-
-// 	// Manually copy nonce to curBuf + 32
-// 	#pragma clang loop unroll(full) vectorize(enable)
-// 	for (int i = 0; i < 15; i++) {
-// 		curBuf[32 + i] = nonce[i];
-// 	}
-
-// 	uint64_t intermediate = verusclhashv2_2(data_key, curBuf, 511, fixrand, fixrandex, g_prand, g_prandex);
-
-// 	// Prefetch data for next stages
-// 	__builtin_prefetch(&data_key[fixrand[0]], 1, 0);
-// 	__builtin_prefetch(&data_key[fixrandex[0]], 1, 0);
-// 	__builtin_prefetch(&g_prand[fixrand[0]], 0, 0);
-// 	__builtin_prefetch(&g_prandex[fixrandex[0]], 0, 0);
-
-// 	// Shuffle intermediate results
-// 	__m128i fill2 = _mm_shuffle_epi8(_mm_loadl_epi64(reinterpret_cast<__m128i *>(&intermediate)), shuf2);
-// 	_mm_store_si128(reinterpret_cast<__m128i *>(&curBuf[32 + 16]), fill2);
-// 	curBuf[32 + 15] = static_cast<unsigned char>(intermediate & 0xFF);
-// 	intermediate &= 511;
-
-// 	// Compute final hash with haraka512_keyed
-// 	haraka512_keyed(hash, curBuf, data_key + intermediate);
-
-// 	// Prefetch the next required data for caching
-// 	__builtin_prefetch(&data_key[272], 1, 3);
-// 	__builtin_prefetch(&g_prand[272], 0, 3);
-// 	__builtin_prefetch(&g_prandex[272], 0, 3);
-// }
-
 #ifdef _WIN32
 
 #define posix_memalign(p, a, s) (((*(p)) = (u128*) _aligned_malloc((s), (a))), *(p) ?0 :errno)
@@ -267,8 +219,6 @@ extern "C" int scanhash_verus(int thr_id, struct work *work, uint32_t max_nonce,
 	uint32_t _ALIGN(64) vhash[8] = { 0 };
 
 	VerusHashHalf(blockhash_half, (unsigned char*)full_data, 1487);
-	
-	// VerusHashHalf(blockhash_half, (unsigned char*)full_data);
 
 	GenNewCLKey((unsigned char*)blockhash_half, data_key);  //data_key a global static 2D array data_key[16][8832];
 
