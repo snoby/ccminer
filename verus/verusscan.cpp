@@ -144,6 +144,7 @@ extern "C" void inline Verus2hash(unsigned char *hash, unsigned char *curBuf, un
 	//	FillExtra((u128 *)curBuf);
 	uint64_t intermediate;
 	memcpy(curBuf + 32, nonce, 15);  //copy the 15bytes nonce
+	// curBuf[32 + 15] = ch;
 
 	intermediate = verusclhashv2_2(data_key, curBuf, 511, fixrand, fixrandex, g_prand, g_prandex);
 
